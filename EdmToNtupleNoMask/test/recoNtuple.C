@@ -10,6 +10,9 @@
 #include "TLegend.h"
 #include <iomanip>
 #include <string>
+
+//using ntuples produced by the EdmToNtupleNoMask.cc as an input
+//this macro produces reco ntuples with masking, clustering and stubs branches keeping all strip data plus meta data (voltages, thresholds, ...)
  
 TFile *f1;
 TTree *duttree;
