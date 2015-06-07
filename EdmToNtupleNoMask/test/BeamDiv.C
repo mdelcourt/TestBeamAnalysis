@@ -43,14 +43,12 @@ void BeamDiv(){
 
 		if (  cluster_size_S0 == 1 &&  cluster_size_S1 == 1 && cluster_size_S2 == 1 &&  cluster_size_S3 == 1){
 			for(size_t iStrip = 0; iStrip < cluster_size_S0; ++iStrip){
-				//if(TMath::Abs(clusters_position_S0->at(0) - clusters_position_S1->at(0)) < 4. && TMath::Abs(clusters_position_S2->at(0) - clusters_position_S3->at(0)) < 4.){
 				h_div->Fill((((clusters_position_S0->at(0)+clusters_position_S1->at(0))/2.)*pitch_Mod_01) - (((clusters_position_S2->at(0)+clusters_position_S3->at(0))/2.))*pitch_Mod_02);
-				//}
 			}
 		}
 	}
 	h_div->Fit("gaus");
 
-	//gStyle->SetOptFit(1011);
+	gStyle->SetOptFit(1011);
 	h_div->Draw();
 }
