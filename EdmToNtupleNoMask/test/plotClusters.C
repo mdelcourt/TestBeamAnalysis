@@ -94,7 +94,4 @@ void plotClusters(){
 			leg1->AddEntry(h_clusters_S0,"S0","l");
 			leg1->AddEntry(h_clusters_S1,"S1","l");
 			leg1->Draw();
-
-
-
 }
