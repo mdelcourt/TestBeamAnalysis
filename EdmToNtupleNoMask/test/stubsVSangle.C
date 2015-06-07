@@ -1,0 +1,62 @@
+#include <fstream>
+#include "TGraphErrors.h"
+#include "TCanvas.h"
+#include "TF1.h"
+
+#include "TLegend.h"
+#include "TAxis.h"
+#include "TGraphErrors.h"
+
+
+void stubsVSangle(){
+
+	TCanvas *c1 = new TCanvas("c1","c1",800,600);
+	c1->SetTickx();
+	c1->SetTicky();
+
+	double angle, MV, sigma;
+	int n = 11;
+
+	TGraphErrors *g1 = new TGraphErrors();
+
+	ifstream fp; 
+	fp.open("stubsVsAngle.txt");
+
+
+	while(!fp.eof()){
+		for (int i = 0 ; i < n ; ++i){
+			if(fp >> angle >> MV >> sigma ){
+				g1->SetPoint(i,angle*0.0174532925,MV*0.09);
+			}
+		}
+	}
+
+
+	TF1 *func = new TF1("fit","[0] + [1]*tan([2]+x)");
+	func->SetParNames ("shift","spacing","ang0");
+	// set starting parameters but not fixing any
+	func->SetParameter(0, 0.5);
+	func->SetParameter(1, 2.75);
+	func->SetParameter(2, 0.02);
+
+	g1->Fit("fit");
+	
+	fp.close();
+
+	g1->SetMarkerStyle(20);
+	g1->SetMarkerColor(1);
+	g1->Draw("ap");
+	g1->SetMinimum(0);
+	//g1->SetMaximum(12);
+	g1->GetXaxis()->SetTitle("Angle [rad]");
+	g1->GetYaxis()->SetTitle("<#\DeltaX>[mm]");
+	g1->SetTitle("rotated DUT");
+
+	TLegend* leg = new TLegend(0.3,0.8,0.6,0.9);
+	leg->SetFillColor(0);
+	//leg->SetLineColor(0);
+	leg->AddEntry(g1,"data","pl");
+	leg->AddEntry(func,"Fit","L");
+	leg->Draw();
+
+}
