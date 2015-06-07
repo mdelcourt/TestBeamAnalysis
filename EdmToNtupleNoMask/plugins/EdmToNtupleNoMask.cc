@@ -17,6 +17,7 @@
 //
 //
 
+//ntuple production with strips data of 2 modules (4 sensors)
 
 #include "DataFormats/Common/interface/DetSetVector.h"
 #include "DataFormats/SiPixelDigi/interface/PixelDigiCollection.h"
