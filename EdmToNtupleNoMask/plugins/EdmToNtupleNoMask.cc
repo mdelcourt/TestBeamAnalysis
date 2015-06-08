@@ -19,6 +19,8 @@
 
 //edm to ntuple production with strips data of 2 modules (4 sensors)
 //masking and clustering can be done in next step using test/recoNtuple.C macro
+//use TB2013 branch
+
 
 #include "DataFormats/Common/interface/DetSetVector.h"
 #include "DataFormats/SiPixelDigi/interface/PixelDigiCollection.h"
