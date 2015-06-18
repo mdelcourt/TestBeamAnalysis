@@ -1,5 +1,5 @@
-#ifndef __TBeamAnalysis_TreeMaker_AnalysisObjects_h
-#define __TBeamAnalysis_TreeMaker_AnalysisObjects_h
+#ifndef __TestBeamAnalysis_EdmToNtupleNoMask_AnalysisObjects_h
+#define __TestBeamAnalysis_EdmToNtupleNoMask_AnalysisObjects_h
 
 #include <vector>
 #include <map>

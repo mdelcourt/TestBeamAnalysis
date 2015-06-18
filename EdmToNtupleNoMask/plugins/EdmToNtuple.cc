@@ -17,7 +17,7 @@
 #include "DataFormats/SiPixelDigi/interface/PixelDigiCollection.h"
 #include "Phase2TrackerDAQ/SiStripDigi/interface/SiStripCommissioningDigi.h"
 
-#include "TBeamAnalysis/TreeMaker/plugins/EdmToNtuple.h"
+#include "TestBeamAnalysis/EdmToNtupleNoMask/plugins/EdmToNtuple.h"
 #include<vector>
 #include<algorithm>
 #include<iomanip>

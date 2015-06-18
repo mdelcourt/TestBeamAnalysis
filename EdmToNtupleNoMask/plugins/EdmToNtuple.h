@@ -1,5 +1,5 @@
-#ifndef __TBeamAnalysis_TreeMaker_EdmToNtupleNoMask_h
-#define __TBeamAnalysis_TreeMaker_EdmToNtupleNoMask_h
+#ifndef __TestBeamAnalysis_EdmToNtupleNoMask_EdmToNtupleNoMask_h
+#define __TestBeamAnalysis_EdmToNtupleNoMask_EdmToNtupleNoMask_h
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -13,7 +13,7 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
-#include "TBeamAnalysis/TreeMaker/interface/AnalysisObjects.h"
+#include "TestBeamAnalysis/EdmToNtupleNoMask/interface/AnalysisObjects.h"
 
 #include "TFile.h"
 #include "TTree.h"

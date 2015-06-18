@@ -1,4 +1,4 @@
-<use name="TBeamAnalysis/TreeMaker" />
+<use name="TestBeamAnalysis/EdmToNtupleNoMask" />
 
 <library file="*.cc" name="TreeMakerPlugins">
   <flags EDM_PLUGIN="1" />
