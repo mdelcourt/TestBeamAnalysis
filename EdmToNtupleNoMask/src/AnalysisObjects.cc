@@ -1,4 +1,4 @@
-#include "TBeamAnalysis/TreeMaker/interface/AnalysisObjects.h"
+#include "TestBeamAnalysis/EdmToNtupleNoMask/interface/AnalysisObjects.h"
 
 
 tbeam::Event::Event():
