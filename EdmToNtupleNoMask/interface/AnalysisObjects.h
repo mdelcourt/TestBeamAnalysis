@@ -31,8 +31,7 @@ namespace tbeam {
     
     std::map< std::string,std::vector<int> > dut_channel;
     std::map< std::string,std::vector<int> > dut_row;
-    std::map< std::string,std::vector<unsigned short> > dut_adc;
-    
+     
     ClassDef(Event,1)
   };
 }
