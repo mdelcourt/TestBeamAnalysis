@@ -17,7 +17,6 @@
 #include "DataFormats/Common/interface/DetSetVectorNew.h"
 #include "DataFormats/SiPixelDigi/interface/PixelDigiCollection.h"
 #include "DataFormats/SiPixelCluster/interface/SiPixelCluster.h"
-#include "Phase2TrackerDAQ/SiStripDigi/interface/SiStripCommissioningDigi.h"
 
 #include "DataFormats/Phase2TrackerDigi/interface/Phase2TrackerDigi.h"
 #include "DataFormats/Phase2TrackerDigi/interface/Phase2TrackerCommissioningDigi.h"
