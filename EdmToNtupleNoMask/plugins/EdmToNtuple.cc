@@ -128,7 +128,7 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 		  std::cout << " Readout  : " << std::hex << std::setw(2) << tr_header.getReadoutMode() << std::endl;
 		  std::cout << " Condition Data : " << ( tr_header.getConditionData() ? "Present" : "Absent") << "\n";
 		  std::cout << " Data Type      : " << ( tr_header.getDataType() ? "Real" : "Fake" ) << "\n";
-		  std::cout << " Status   : " << std::hex << std::setw(16)<< (int) tr_header.getGlibStatusCode() << std::endl;
+		  std::cout << " Status   : " << std::hex << std::setw(16) << (int) tr_header.getGlibStatusCode() << std::endl;
 	       }	     
 	     
 	     evtInfo.condData = tr_header.getConditionData();
@@ -136,15 +136,15 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 
 	     if(verbosity_)
 	       {		  
-		  std::cout  << " Nr CBC   : " << std::hex << std::setw(16)<< (int) tr_header.getNumberOfCBC() << std::endl;
+		  std::cout << " Nr CBC   : " << std::hex << std::setw(16) << (int) tr_header.getNumberOfCBC() << std::endl;
 		  std::cout << " CBC stat : ";
-		  for(int i=0; i<tr_header.getNumberOfCBC(); i++)
+		  for( int i=0;i<tr_header.getNumberOfCBC();i++ )
 		    {
 		       std::cout << std::hex << std::setw(2) << (int) tr_header.CBCStatus()[i] << " " << std::endl;
 		    }	     
 	       }	     
 	     
-	     if (tr_header.getNumberOfCBC()==2)
+	     if( tr_header.getNumberOfCBC() == 2 )
 	       {
 		  evtInfo.cbc1Status = (int) tr_header.CBCStatus()[0];
 		  evtInfo.cbc2Status = (int) tr_header.CBCStatus()[1];
@@ -169,11 +169,32 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	  {	
 	     uint32_t key = j_detSet->getKey();
 	     uint32_t value = j_detSet->getValue();
-	     	     
-	     if(key == tdcAdd_) evtInfo.tdcPhase = value;
-	     else if(key == hvAdd_) evtInfo.HVsettings = value;
-	     else if(key == DUTangAdd_) evtInfo.DUTangle = value;
-	     else if(key == stubAdd_) evtInfo.stubWord = value;
+	   
+	     if(verbosity_)
+	       {
+		  std::cout << "Found key " << std::hex << key << " with value " << std::dec << value << std::endl;
+	       }	     
+	     
+	     if(key == tdcAdd_) 
+	       {
+		  evtInfo.tdcPhase = value;
+		  if(verbosity_) std::cout << "It corresponds to TDC key" << std::endl;
+	       }	     
+	     else if(key == hvAdd_) 
+	       {
+		  evtInfo.HVsettings = value;
+		  if(verbosity_) std::cout << "It corresponds to HV key" << std::endl;
+	       }	     
+	     else if(key == DUTangAdd_) 
+	       {
+		  evtInfo.DUTangle = value;
+		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
+	       }	     
+	     else if(key == stubAdd_) 
+	       {
+		  evtInfo.stubWord = value;
+		  if(verbosity_) std::cout << "It corresponds to stub word key" << std::endl;
+	       }	     
 	  }
      }
    
@@ -185,6 +206,23 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	std::cout << "Phase2TrackerDigiProducer not found" << std::endl;
 	exit(1);	
      }   
+   
+   edm::DetSetVector<Phase2TrackerDigi>::const_iterator it;
+   // loop over modules   
+   for(it = input->begin() ; it != input->end(); ++it)
+     {
+	int detId = it->id;
+	if(verbosity_) std::cout << "Module " << std::dec << detId << " ---------- " << std::endl;
+	
+	// loop over hits in the module
+	for(edm::DetSet<Phase2TrackerDigi>::const_iterator hit = it->begin();
+	    hit!=it->end(); hit++ )
+	  {
+	     if(verbosity_) std::cout << "channel=" << hit->channel() << " " << hit->row() << std::endl;
+ 	     evtInfo.dut_channel[detIdNamemap_[detId]].push_back(hit->channel());
+	     evtInfo.dut_row[detIdNamemap_[detId]].push_back(hit->row());
+	  }	
+     }
 
    edm::Handle< edmNew::DetSetVector<SiPixelCluster> > inputCluster;
    iEvent.getByLabel( "Phase2TrackerDigiProducer", "Sparsified", inputCluster);
@@ -194,27 +232,12 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	std::cout << "Phase2TrackerDigiProducer not found" << std::endl;
 	exit(1);	
      }   
-   
-   for( edmNew::DetSetVector<SiPixelCluster>::const_iterator itc=inputCluster->begin();
-	itc!=inputCluster->end();itc++ )
+
+   edmNew::DetSetVector<SiPixelCluster>::const_iterator itc;
+   for( itc=inputCluster->begin();itc!=inputCluster->end();itc++ )
      {
 //	uint32_t detid = itc->id();
      }   
-   
-   edm::DetSetVector<Phase2TrackerDigi>::const_iterator it;
-   // loop over modules   
-   for(it = input->begin() ; it != input->end(); ++it)
-     {
-	int detId = it->id;
-	
-	// loop over hits in the module
-	for(edm::DetSet<Phase2TrackerDigi>::const_iterator hit = it->begin();
-	    hit!=it->end(); hit++ )
-	  {
-	     evtInfo.dut_channel[detIdNamemap_[detId]].push_back(hit->channel());
-	     evtInfo.dut_row[detIdNamemap_[detId]].push_back(hit->row());
-	  }	
-     }
    
   v_evtInfo_.push_back(evtInfo);
 }
