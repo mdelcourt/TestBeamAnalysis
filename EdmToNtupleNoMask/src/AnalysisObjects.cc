@@ -10,5 +10,6 @@ tbeam::Event::Event():
   dt(999999),
   tdcPhase(999999),
   HVsettings(999999),
-  DUTangle(999999)
+  DUTangle(999999),
+  stubWord(999999)
 {}
