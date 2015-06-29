@@ -12,4 +12,6 @@ tbeam::Event::Event():
   HVsettings(999999),
   DUTangle(999999),
   stubWord(999999)
-{}
+{
+}
+

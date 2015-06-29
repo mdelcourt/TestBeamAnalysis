@@ -89,7 +89,6 @@ void EdmToNtupleNoMask::beginJob()
   tree_->Branch("cbc2Status", &ev.cbc2Status);
   tree_->Branch("dut_channel", "std::map< std::string,std::vector<int> >", &ev.dut_channel);
   tree_->Branch("dut_row", "std::map< std::string,std::vector<int> >", &ev.dut_row);
-//  tree_->Branch("dut_adc", "std::map< std::string,std::vector<unsigned short> >", &ev.dut_adc);
 }
 
 void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
@@ -220,7 +219,8 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	    hit!=it->end(); hit++ )
 	  {
 	     if(verbosity_) std::cout << "channel=" << hit->channel() << " " << hit->row() << std::endl;
- 	     evtInfo.dut_channel[detIdNamemap_[detId]].push_back(hit->channel());
+
+	     evtInfo.dut_channel[detIdNamemap_[detId]].push_back(hit->channel());
 	     evtInfo.dut_row[detIdNamemap_[detId]].push_back(hit->row());
 	  }	
      }
@@ -240,17 +240,12 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 //	uint32_t detid = itc->id();
      }   
    
-  v_evtInfo_.push_back(evtInfo);
+   ev = evtInfo;
+   tree_->Fill();
 }
 
 void EdmToNtupleNoMask::endJob()
 {
-  std::sort(v_evtInfo_.begin(),v_evtInfo_.end(),sortEvent);
-  
-  for( auto& e: v_evtInfo_ ) {
-    ev = e;
-    tree_->Fill();
-  } 
 }
 
 bool EdmToNtupleNoMask::sortEvent( const tbeam::Event& a,  const tbeam::Event& b) {
