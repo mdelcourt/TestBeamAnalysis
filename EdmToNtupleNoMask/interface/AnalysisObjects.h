@@ -23,6 +23,11 @@ namespace tbeam {
     unsigned int tdcPhase;
     unsigned int HVsettings;
     unsigned int DUTangle;
+    uint32_t stubWord;
+    int condData;
+    int glibStatus;
+    int cbc1Status;
+    int cbc2Status;
     
     std::map< std::string,std::vector<int> > dut_channel;
     std::map< std::string,std::vector<int> > dut_row;

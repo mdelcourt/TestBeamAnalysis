@@ -1,4 +1,6 @@
 <use name="TestBeamAnalysis/EdmToNtupleNoMask" />
+<use name="DataFormats/FEDRawData"/>
+<use name="EventFilter/Phase2TrackerRawToDigi"/>
 
 <library file="*.cc" name="TreeMakerPlugins">
   <flags EDM_PLUGIN="1" />
