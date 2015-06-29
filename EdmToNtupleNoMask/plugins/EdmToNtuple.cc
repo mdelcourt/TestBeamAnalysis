@@ -148,6 +148,8 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 		  evtInfo.cbc1Status = (int) tr_header.CBCStatus()[0];
 		  evtInfo.cbc2Status = (int) tr_header.CBCStatus()[1];
 	       }
+	     
+	     delete buffer;
 	  }	
      }   
    
