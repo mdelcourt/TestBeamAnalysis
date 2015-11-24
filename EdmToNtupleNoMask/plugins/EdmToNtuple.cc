@@ -161,12 +161,15 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 		    }	     
 	       }	     
 	     
-/*	     if( tr_header.getNumberOfCBC() == 2 )
+	     if( tr_header.getNumberOfCBC() == 2 )
 	       {
-		  evtInfo.cbc1Status = (int) tr_header.CBCStatus()[0];
-		  evtInfo.cbc2Status = (int) tr_header.CBCStatus()[1];
-	       }*/
-         if (tr_header.getNumberOfCBC()==16){
+		  evtInfo.cbcStatus[0] = (int) tr_header.CBCStatus()[0];
+		  evtInfo.cbcStatus[1] = (int) tr_header.CBCStatus()[1];
+          for(int i = 2 ; i<16; i++){
+              evtInfo.cbcStatus[i]=0;
+            }
+	       }
+         else if (tr_header.getNumberOfCBC()==16){
             for (int i=0; i<16; i++){
                 evtInfo.cbcStatus[i]=(int) tr_header.CBCStatus()[i];
             }
