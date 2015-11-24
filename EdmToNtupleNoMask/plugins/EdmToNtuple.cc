@@ -209,42 +209,42 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	     if(key == tdcAdd_) 
 	       {
 		  evtInfo.tdcPhase = value;
-		  if(verbosity_) std::cout << "It corresponds to TDC key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to the TDC key" << std::endl;
 	       }	     
 	     else if(key == hvAdd_) 
 	       {
 		  evtInfo.HVsettings = value;
-		  if(verbosity_) std::cout << "It corresponds to HV key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to the HV key" << std::endl;
 	       }	     
 	     else if(key == DUTangAdd_) 
 	       {
 		  evtInfo.DUTangle = value;
-		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to the DUT angle key" << std::endl;
 	       }	     
 	     else if(key == tiltAdd_) 
 	       {
 		  evtInfo.tilt = value;
-		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to the tilt angle key" << std::endl;
 	       }	     
 	     else if(key == cwdAdd_) 
 	       {
 		  evtInfo.cwd = value;
-		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to the cluster width discriminator key" << std::endl;
 	       }	     
 	     else if(key == windowAdd_) 
 	       {
 		  evtInfo.window = value;
-		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to the stub window size angle key" << std::endl;
 	       }	     
 	     else if(key == vcthAdd_) 
 	       {
 		  evtInfo.vcth = value;
-		  if(verbosity_) std::cout << "It corresponds to VCTH angle key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to the VCTH key" << std::endl;
 	       }	     
 	     else if(key == offsetAdd_) 
 	       {
 		  evtInfo.offset = value;
-		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to the offset parameter key" << std::endl;
 	       }	     
 	     else if(key == stubAdd_) 
 	       {
