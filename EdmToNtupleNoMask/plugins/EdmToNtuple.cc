@@ -30,7 +30,6 @@
 #include<vector>
 #include<algorithm>
 #include<iomanip>
-
 using namespace Phase2Tracker;
 
 EdmToNtupleNoMask::EdmToNtupleNoMask(const edm::ParameterSet& iConfig) :
@@ -60,6 +59,18 @@ EdmToNtupleNoMask::EdmToNtupleNoMask(const edm::ParameterSet& iConfig) :
   stemp = iConfig.getParameter<std::string>("stubAddress");
   stubAdd_ = std::stoul(stemp, nullptr, 16);
   
+  stemp = iConfig.getParameter<std::string>("cwdAddress");
+  cwdAdd_ = std::stoul(stemp, nullptr, 16);
+  stemp = iConfig.getParameter<std::string>("offsetAddress");
+  offsetAdd_ = std::stoul(stemp, nullptr, 16);
+  stemp = iConfig.getParameter<std::string>("windowAddress");
+  windowAdd_ = std::stoul(stemp, nullptr, 16);
+  stemp = iConfig.getParameter<std::string>("tiltAddress");
+  tiltAdd_ = std::stoul(stemp, nullptr, 16);
+
+  stemp = iConfig.getParameter<std::string>("vcthAddress");
+  vcthAdd_ = std::stoul(stemp, nullptr, 16);
+
   if(verbosity_) {
     std::cout << "tdcPhase Address=" << tdcAdd_ << std::endl;
     std::cout << "HVsettings Address=" << hvAdd_ << std::endl;
@@ -83,10 +94,18 @@ void EdmToNtupleNoMask::beginJob()
   tree_->Branch("hvSettings", &ev.HVsettings);
   tree_->Branch("dutAngle", &ev.DUTangle);
   tree_->Branch("stubWord", &ev.stubWord);
+  tree_->Branch("vcth", &ev.vcth);
+  tree_->Branch("offset", &ev.offset);
+  tree_->Branch("window", &ev.window);
+  tree_->Branch("cwd", &ev.cwd);
+  tree_->Branch("tilt", &ev.tilt);
   tree_->Branch("condData", &ev.condData);
   tree_->Branch("glibStatus", &ev.glibStatus);
-  tree_->Branch("cbc1Status", &ev.cbc1Status);
-  tree_->Branch("cbc2Status", &ev.cbc2Status);
+  for (int i=0; i<16; i++){
+      std::stringstream ss;
+      ss<<"cbc"<<i<<"Status";
+      tree_->Branch(ss.str().c_str(),&ev.cbcStatus[i]);
+  }
   tree_->Branch("dut_channel", "std::map< std::string,std::vector<int> >", &ev.dut_channel);
   tree_->Branch("dut_row", "std::map< std::string,std::vector<int> >", &ev.dut_row);
 }
@@ -142,11 +161,21 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 		    }	     
 	       }	     
 	     
-	     if( tr_header.getNumberOfCBC() == 2 )
+/*	     if( tr_header.getNumberOfCBC() == 2 )
 	       {
 		  evtInfo.cbc1Status = (int) tr_header.CBCStatus()[0];
 		  evtInfo.cbc2Status = (int) tr_header.CBCStatus()[1];
-	       }
+	       }*/
+         if (tr_header.getNumberOfCBC()==16){
+            for (int i=0; i<16; i++){
+                evtInfo.cbcStatus[i]=(int) tr_header.CBCStatus()[i];
+            }
+        }
+         else{
+             for(int i=0; i<16; i++){
+                 evtInfo.cbcStatus[i]=0;
+             }
+         }
 	     
 	     delete buffer;
 	  }	
@@ -159,7 +188,6 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	std::cout << "condition data not found" << std::endl;
 	exit(1);
      }   
-
    std::vector<std::vector<Phase2TrackerCommissioningDigi> >::const_iterator i_detSet;
    std::vector<Phase2TrackerCommissioningDigi>::const_iterator j_detSet;
    
@@ -190,6 +218,31 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 		  evtInfo.DUTangle = value;
 		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
 	       }	     
+	     else if(key == tiltAdd_) 
+	       {
+		  evtInfo.tilt = value;
+		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
+	       }	     
+	     else if(key == cwdAdd_) 
+	       {
+		  evtInfo.cwd = value;
+		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
+	       }	     
+	     else if(key == windowAdd_) 
+	       {
+		  evtInfo.window = value;
+		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
+	       }	     
+	     else if(key == vcthAdd_) 
+	       {
+		  evtInfo.vcth = value;
+		  if(verbosity_) std::cout << "It corresponds to VCTH angle key" << std::endl;
+	       }	     
+	     else if(key == offsetAdd_) 
+	       {
+		  evtInfo.offset = value;
+		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
+	       }	     
 	     else if(key == stubAdd_) 
 	       {
 		  evtInfo.stubWord = value;
@@ -197,7 +250,6 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	       }	     
 	  }
      }
-   
    edm::Handle< edm::DetSetVector<Phase2TrackerDigi> > input;
    iEvent.getByLabel( "Phase2TrackerDigiProducer", "Unsparsified", input);
    

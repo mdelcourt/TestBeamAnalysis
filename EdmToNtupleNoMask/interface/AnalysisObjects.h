@@ -24,15 +24,18 @@ namespace tbeam {
     unsigned int HVsettings;
     unsigned int DUTangle;
     uint32_t stubWord;
+    uint32_t window;
+    uint32_t offset;
+    uint32_t cwd;
+    uint32_t tilt;
+    uint32_t vcth;
     int condData;
     int glibStatus;
-    int cbc1Status;
-    int cbc2Status;
-    
+    int cbcStatus[16];
     std::map< std::string,std::vector<int> > dut_channel;
     std::map< std::string,std::vector<int> > dut_row;
      
-    ClassDef(Event,1)
+    ClassDef(Event,2)
   };
 }
 #endif

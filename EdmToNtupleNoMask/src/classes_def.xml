@@ -1,6 +1,7 @@
 <lcgdict>
-  <class name="tbeam::Event" ClassVersion="1">
-    <version ClassVersion="1" checksum="3429877205" />
+  <class name="tbeam::Event" ClassVersion="2">
+  <!--  <version ClassVersion="1" checksum="3429877205" />-->
+  <version ClassVersion="2" checksum="3560704238" />
   </class>
   <class name="std::vector<tbeam::Event>" persistent="true" />
   <class name="std::map<std::string, std::vector<int> >" persistent="true" /> 
