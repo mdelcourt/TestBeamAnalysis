@@ -40,6 +40,11 @@ class EdmToNtupleNoMask : public edm::EDAnalyzer
   uint32_t hvAdd_;
   uint32_t DUTangAdd_;      
   uint32_t stubAdd_;
+  uint32_t cwdAdd_;
+  uint32_t tiltAdd_;
+  uint32_t vcthAdd_;
+  uint32_t offsetAdd_;
+  uint32_t windowAdd_;
    
   uint32_t stubWord_;
   int condData_;
