@@ -280,7 +280,7 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	  }	
      }
 
-   edm::Handle< edmNew::DetSetVector<SiPixelCluster> > inputCluster;
+   /*edm::Handle< edmNew::DetSetVector<SiPixelCluster> > inputCluster;
    iEvent.getByLabel( "Phase2TrackerDigiProducer", "Sparsified", inputCluster);
    
    if( !inputCluster.isValid() )
@@ -294,7 +294,7 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
      {
 //	uint32_t detid = itc->id();
      }   
-   
+   */
    ev = evtInfo;
    tree_->Fill();
 }
