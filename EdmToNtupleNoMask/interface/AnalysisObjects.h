@@ -29,9 +29,13 @@ namespace tbeam {
     uint32_t cwd;
     uint32_t tilt;
     uint32_t vcth;
+    uint32_t stubLatency;
+    uint32_t triggerLatency;
     int condData;
     int glibStatus;
-    int cbcStatus[16];
+    int cbc1Status;
+    int cbc2Status;
+    
     std::map< std::string,std::vector<int> > dut_channel;
     std::map< std::string,std::vector<int> > dut_row;
      

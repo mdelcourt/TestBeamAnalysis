@@ -30,6 +30,7 @@
 #include<vector>
 #include<algorithm>
 #include<iomanip>
+
 using namespace Phase2Tracker;
 
 EdmToNtupleNoMask::EdmToNtupleNoMask(const edm::ParameterSet& iConfig) :
@@ -71,6 +72,11 @@ EdmToNtupleNoMask::EdmToNtupleNoMask(const edm::ParameterSet& iConfig) :
   stemp = iConfig.getParameter<std::string>("vcthAddress");
   vcthAdd_ = std::stoul(stemp, nullptr, 16);
 
+  stemp = iConfig.getParameter<std::string>("stubLatencyAddress");
+  stubLatencyAdd_ = std::stoul(stemp, nullptr, 16);
+  stemp = iConfig.getParameter<std::string>("triggerLatencyAddress");
+  triggerLatencyAdd_ = std::stoul(stemp, nullptr, 16);
+
   if(verbosity_) {
     std::cout << "tdcPhase Address=" << tdcAdd_ << std::endl;
     std::cout << "HVsettings Address=" << hvAdd_ << std::endl;
@@ -98,14 +104,13 @@ void EdmToNtupleNoMask::beginJob()
   tree_->Branch("offset", &ev.offset);
   tree_->Branch("window", &ev.window);
   tree_->Branch("cwd", &ev.cwd);
+  tree_->Branch("stubLatency", &ev.stubLatency);
+  tree_->Branch("triggerLatency", &ev.triggerLatency);
   tree_->Branch("tilt", &ev.tilt);
   tree_->Branch("condData", &ev.condData);
   tree_->Branch("glibStatus", &ev.glibStatus);
-  for (int i=0; i<16; i++){
-      std::stringstream ss;
-      ss<<"cbc"<<i<<"Status";
-      tree_->Branch(ss.str().c_str(),&ev.cbcStatus[i]);
-  }
+  tree_->Branch("cbc1Status", &ev.cbc1Status);
+  tree_->Branch("cbc2Status", &ev.cbc2Status);
   tree_->Branch("dut_channel", "std::map< std::string,std::vector<int> >", &ev.dut_channel);
   tree_->Branch("dut_row", "std::map< std::string,std::vector<int> >", &ev.dut_row);
 }
@@ -163,22 +168,9 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	     
 	     if( tr_header.getNumberOfCBC() == 2 )
 	       {
-		  evtInfo.cbcStatus[0] = (int) tr_header.CBCStatus()[0];
-		  evtInfo.cbcStatus[1] = (int) tr_header.CBCStatus()[1];
-          for(int i = 2 ; i<16; i++){
-              evtInfo.cbcStatus[i]=0;
-            }
+		  evtInfo.cbc1Status = (int) tr_header.CBCStatus()[0];
+		  evtInfo.cbc2Status = (int) tr_header.CBCStatus()[1];
 	       }
-         else if (tr_header.getNumberOfCBC()==16){
-            for (int i=0; i<16; i++){
-                evtInfo.cbcStatus[i]=(int) tr_header.CBCStatus()[i];
-            }
-        }
-         else{
-             for(int i=0; i<16; i++){
-                 evtInfo.cbcStatus[i]=0;
-             }
-         }
 	     
 	     delete buffer;
 	  }	
@@ -209,48 +201,58 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	     if(key == tdcAdd_) 
 	       {
 		  evtInfo.tdcPhase = value;
-		  if(verbosity_) std::cout << "It corresponds to the TDC key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to TDC key" << std::endl;
 	       }	     
 	     else if(key == hvAdd_) 
 	       {
 		  evtInfo.HVsettings = value;
-		  if(verbosity_) std::cout << "It corresponds to the HV key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to HV key" << std::endl;
 	       }	     
 	     else if(key == DUTangAdd_) 
 	       {
 		  evtInfo.DUTangle = value;
-		  if(verbosity_) std::cout << "It corresponds to the DUT angle key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
 	       }	     
 	     else if(key == tiltAdd_) 
 	       {
 		  evtInfo.tilt = value;
-		  if(verbosity_) std::cout << "It corresponds to the tilt angle key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
 	       }	     
 	     else if(key == cwdAdd_) 
 	       {
 		  evtInfo.cwd = value;
-		  if(verbosity_) std::cout << "It corresponds to the cluster width discriminator key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
 	       }	     
 	     else if(key == windowAdd_) 
 	       {
 		  evtInfo.window = value;
-		  if(verbosity_) std::cout << "It corresponds to the stub window size angle key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
 	       }	     
 	     else if(key == vcthAdd_) 
 	       {
 		  evtInfo.vcth = value;
-		  if(verbosity_) std::cout << "It corresponds to the VCTH key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to VCTH angle key" << std::endl;
 	       }	     
 	     else if(key == offsetAdd_) 
 	       {
 		  evtInfo.offset = value;
-		  if(verbosity_) std::cout << "It corresponds to the offset parameter key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
 	       }	     
 	     else if(key == stubAdd_) 
 	       {
 		  evtInfo.stubWord = value;
 		  if(verbosity_) std::cout << "It corresponds to stub word key" << std::endl;
 	       }	     
+         else if (key == stubLatencyAdd_)
+           {
+          evtInfo.stubLatency = value;
+          if(verbosity_) std::cout << "It corresponds to stub latency key" << std::endl;
+           }
+         else if (key == triggerLatencyAdd_)
+           {
+          evtInfo.triggerLatency = value;
+          if(verbosity_) std::cout << "It corresponds to trigger latency key" << std::endl;                                              
+           }
 	  }
      }
    edm::Handle< edm::DetSetVector<Phase2TrackerDigi> > input;
@@ -280,7 +282,7 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	  }	
      }
 
-   /*edm::Handle< edmNew::DetSetVector<SiPixelCluster> > inputCluster;
+   edm::Handle< edmNew::DetSetVector<SiPixelCluster> > inputCluster;
    iEvent.getByLabel( "Phase2TrackerDigiProducer", "Sparsified", inputCluster);
    
    if( !inputCluster.isValid() )
@@ -294,7 +296,7 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
      {
 //	uint32_t detid = itc->id();
      }   
-   */
+   
    ev = evtInfo;
    tree_->Fill();
 }

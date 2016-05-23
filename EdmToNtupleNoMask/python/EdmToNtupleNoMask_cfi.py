@@ -8,10 +8,12 @@ treeMaker = cms.EDAnalyzer("EdmToNtupleNoMask",
    hvAddress = cms.string("0x05000000"),
    dutAngAddress = cms.string("0x04000000"),
    stubAddress = cms.string("0x0B0000FF"),
-   cwdAddress = cms.string("0x81000000"),
+   cwdAddress = cms.string("0x01180100"),
    offsetAddress = cms.string("0x80000000"),
-   windowAddress = cms.string("0x82000000"),
+   windowAddress = cms.string("0x01190100"),
    tiltAddress = cms.string("0x83000000"),
-   vcthAddress = cms.string("0x08000000")
+   vcthAddress = cms.string("0x010c0100"),
+   stubLatencyAddress = cms.string("0x09000000"),
+   triggerLatencyAddress = cms.string("0x01010100")
 )
 

@@ -11,7 +11,9 @@ tbeam::Event::Event():
   tdcPhase(999999),
   HVsettings(999999),
   DUTangle(999999),
-  stubWord(999999)
+  stubWord(999999),
+  stubLatency(999999),
+  triggerLatency(999999)
 {
 }
 

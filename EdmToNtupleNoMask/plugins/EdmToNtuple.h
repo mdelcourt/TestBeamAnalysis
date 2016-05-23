@@ -45,7 +45,9 @@ class EdmToNtupleNoMask : public edm::EDAnalyzer
   uint32_t vcthAdd_;
   uint32_t offsetAdd_;
   uint32_t windowAdd_;
-   
+  uint32_t stubLatencyAdd_;
+  uint32_t triggerLatencyAdd_;
+
   uint32_t stubWord_;
   int condData_;
   int cbc2Status_;
