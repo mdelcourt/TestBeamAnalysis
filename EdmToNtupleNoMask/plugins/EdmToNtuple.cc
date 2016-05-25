@@ -34,7 +34,9 @@
 using namespace Phase2Tracker;
 
 EdmToNtupleNoMask::EdmToNtupleNoMask(const edm::ParameterSet& iConfig) :
-  verbosity_(iConfig.getUntrackedParameter<int>("verbosity", 0))
+  verbosity_(iConfig.getUntrackedParameter<int>("verbosity", 0)),
+  nCBC_(iConfig.getUntrackedParameter<int>("numCBC", 2)),
+  nStripsPerCBC_(iConfig.getUntrackedParameter<int>("numStripsPerCbc", 127))
 {
   std::vector<int> detId(iConfig.getParameter< std::vector<int> >("detIdVec"));
   std::vector<std::string> detNames(iConfig.getParameter< std::vector<std::string> >("detNamesVec"));
@@ -100,6 +102,8 @@ void EdmToNtupleNoMask::beginJob()
   tree_->Branch("hvSettings", &ev.HVsettings);
   tree_->Branch("dutAngle", &ev.DUTangle);
   tree_->Branch("stubWord", &ev.stubWord);
+  tree_->Branch("stubWordReco", &ev.stubWord);
+  tree_->Branch("stubWordReco", &ev.stubWordReco);
   tree_->Branch("vcth", &ev.vcth);
   tree_->Branch("offset", &ev.offset);
   tree_->Branch("window", &ev.window);
@@ -109,10 +113,10 @@ void EdmToNtupleNoMask::beginJob()
   tree_->Branch("tilt", &ev.tilt);
   tree_->Branch("condData", &ev.condData);
   tree_->Branch("glibStatus", &ev.glibStatus);
-  tree_->Branch("cbc1Status", &ev.cbc1Status);
-  tree_->Branch("cbc2Status", &ev.cbc2Status);
+  tree_->Branch("cbcStatus", "std::vector<int>",&ev.cbcStatus);
   tree_->Branch("dut_channel", "std::map< std::string,std::vector<int> >", &ev.dut_channel);
   tree_->Branch("dut_row", "std::map< std::string,std::vector<int> >", &ev.dut_row);
+  tree_->Branch("clusters", "std::map< std::string,std::vector <std::pair <float, int >  >", &ev.clusters);
 }
 
 void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
@@ -164,13 +168,10 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 		    {
 		       std::cout << std::hex << std::setw(2) << (int) tr_header.CBCStatus()[i] << " " << std::endl;
 		    }	     
-	       }	     
-	     
-	     if( tr_header.getNumberOfCBC() == 2 )
-	       {
-		  evtInfo.cbc1Status = (int) tr_header.CBCStatus()[0];
-		  evtInfo.cbc2Status = (int) tr_header.CBCStatus()[1];
-	       }
+	   }	     
+        for( int i=0;i<tr_header.getNumberOfCBC();i++ ){
+           evtInfo.cbcStatus.push_back(tr_header.CBCStatus()[i]);
+        }
 	     
 	     delete buffer;
 	  }	
@@ -201,12 +202,12 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	     if(key == tdcAdd_) 
 	       {
 		  evtInfo.tdcPhase = value;
-		  if(verbosity_) std::cout << "It corresponds to TDC key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to the TDC key" << std::endl;
 	       }	     
 	     else if(key == hvAdd_) 
 	       {
 		  evtInfo.HVsettings = value;
-		  if(verbosity_) std::cout << "It corresponds to HV key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to the HV key" << std::endl;
 	       }	     
 	     else if(key == DUTangAdd_) 
 	       {
@@ -216,22 +217,22 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	     else if(key == tiltAdd_) 
 	       {
 		  evtInfo.tilt = value;
-		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to the DUT tilt key" << std::endl;
 	       }	     
 	     else if(key == cwdAdd_) 
 	       {
 		  evtInfo.cwd = value;
-		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to the cwd key" << std::endl;
 	       }	     
 	     else if(key == windowAdd_) 
 	       {
 		  evtInfo.window = value;
-		  if(verbosity_) std::cout << "It corresponds to DUT angle key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to the cluster window key" << std::endl;
 	       }	     
 	     else if(key == vcthAdd_) 
 	       {
 		  evtInfo.vcth = value;
-		  if(verbosity_) std::cout << "It corresponds to VCTH angle key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to the VCTH key" << std::endl;
 	       }	     
 	     else if(key == offsetAdd_) 
 	       {
@@ -241,23 +242,22 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	     else if(key == stubAdd_) 
 	       {
 		  evtInfo.stubWord = value;
-		  if(verbosity_) std::cout << "It corresponds to stub word key" << std::endl;
+		  if(verbosity_) std::cout << "It corresponds to the stub word key" << std::endl;
 	       }	     
-         else if (key == stubLatencyAdd_)
-           {
+        else if (key == stubLatencyAdd_){
           evtInfo.stubLatency = value;
-          if(verbosity_) std::cout << "It corresponds to stub latency key" << std::endl;
+          if(verbosity_) std::cout << "It corresponds to the stub latency key" << std::endl;
            }
-         else if (key == triggerLatencyAdd_)
+        else if (key == triggerLatencyAdd_)
            {
           evtInfo.triggerLatency = value;
-          if(verbosity_) std::cout << "It corresponds to trigger latency key" << std::endl;                                              
-           }
+          if(verbosity_) std::cout << "It corresponds to the trigger latency key" << std::endl;                                              
+         }
 	  }
      }
    edm::Handle< edm::DetSetVector<Phase2TrackerDigi> > input;
    iEvent.getByLabel( "Phase2TrackerDigiProducer", "Unsparsified", input);
-   
+ 
    if( !input.isValid() )
      {
 	std::cout << "Phase2TrackerDigiProducer not found" << std::endl;
@@ -265,22 +265,31 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
      }   
    
    edm::DetSetVector<Phase2TrackerDigi>::const_iterator it;
-   // loop over modules   
+   // loop over modules  
+   std::vector < int >processedDetId;
+   evtInfo.stubWordReco=0;
    for(it = input->begin() ; it != input->end(); ++it)
      {
-	int detId = it->id;
-	if(verbosity_) std::cout << "Module " << std::dec << detId << " ---------- " << std::endl;
+	      int detId = it->id;
+         processedDetId.push_back(detId);
+	      if(verbosity_) std::cout << "Module " << std::dec << detId << " ---------- " << std::endl;
 	
-	// loop over hits in the module
-	for(edm::DetSet<Phase2TrackerDigi>::const_iterator hit = it->begin();
-	    hit!=it->end(); hit++ )
-	  {
-	     if(verbosity_) std::cout << "channel=" << hit->channel() << " " << hit->row() << std::endl;
+	      // loop over hits in the module
+	      for(edm::DetSet<Phase2TrackerDigi>::const_iterator hit = it->begin();
+	         hit!=it->end(); hit++ )
+	      {
+	         if(verbosity_) std::cout << "channel=" << hit->channel() << " " << hit->row() << std::endl;
 
-	     evtInfo.dut_channel[detIdNamemap_[detId]].push_back(hit->channel());
-	     evtInfo.dut_row[detIdNamemap_[detId]].push_back(hit->row());
-	  }	
+	         evtInfo.dut_channel[detIdNamemap_[detId]].push_back(hit->channel());
+	         evtInfo.dut_row[detIdNamemap_[detId]].push_back(hit->row());
+	      }
+         evtInfo.clusters[detIdNamemap_[detId]] = clusterizer(evtInfo.dut_channel[detIdNamemap_[detId]]);
+         if (std::find(processedDetId.begin(), processedDetId.end(), detId-1) != processedDetId.end()){
+            evtInfo.stubWordReco=stubSimulator(evtInfo.clusters[detIdNamemap_[detId-1]],evtInfo.clusters[detIdNamemap_[detId]],evtInfo.window>>4);
+         }
      }
+   
+
 
    edm::Handle< edmNew::DetSetVector<SiPixelCluster> > inputCluster;
    iEvent.getByLabel( "Phase2TrackerDigiProducer", "Sparsified", inputCluster);
@@ -308,6 +317,61 @@ void EdmToNtupleNoMask::endJob()
 bool EdmToNtupleNoMask::sortEvent( const tbeam::Event& a,  const tbeam::Event& b) {
   return a.time < b.time;
 }
+
+std::vector < std::pair <float , int > > EdmToNtupleNoMask::clusterizer ( std::vector <int> hits){
+   sort(hits.begin(),hits.end());
+   std::vector < std::pair < float , int > > toReturn;
+    if (hits.size()<1){
+        return(toReturn);
+    }
+    float x0=hits.at(0);
+    int size=1;
+    int edge = -1;
+    if (nCBC_==16) edge = 8*nStripsPerCBC_;
+    for (unsigned int i=1; i<hits.size(); i++){
+        if (hits.at(i)==x0+size && !(hits.at(i)==edge)){
+            size++;
+        }
+        else{
+            std::pair < float , int > clust;
+            clust.first  = x0+(size-1)/2.;
+            clust.second = size;
+            toReturn.push_back(clust);
+            x0=hits.at(i);
+            size=1;
+        }   
+    }       
+   std::pair < float , int > clust;
+   clust.first  = x0+(size-1)/2.;
+   clust.second = size;
+   toReturn.push_back(clust);
+   return(toReturn);
+}
+
+uint32_t EdmToNtupleNoMask::stubSimulator (std::vector < std::pair <float , int> > clust0, std::vector < std::pair <float ,int > > clust1 , uint32_t windowSize_){
+    int CWD = 256;
+    int SSIZE = windowSize_;
+    int CBCSIZE = 127;
+    uint32_t stubWord=0;
+    for (unsigned int i=0; i<clust1.size(); i++){
+        if (clust1.at(i).second<(int)CWD){
+            for(unsigned int j=0; j<clust0.size(); j++){
+                if (clust0.at(j).second<(int)CWD && abs((int)clust1.at(i).first-(int)clust1.at(j).first)<(int)SSIZE){
+                    for (int k=7; k>=0; k--){
+                        if ((int)clust0.at(j).first>=k*CBCSIZE){
+                            //Set kth byte to 1
+                            stubWord= stubWord | (int)1<<k;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+   return(stubWord);
+}
+
+
 //define this as a plug-in
 DEFINE_FWK_MODULE(EdmToNtupleNoMask);
 

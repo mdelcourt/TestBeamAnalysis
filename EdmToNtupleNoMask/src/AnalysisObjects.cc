@@ -16,4 +16,3 @@ tbeam::Event::Event():
   triggerLatency(999999)
 {
 }
-

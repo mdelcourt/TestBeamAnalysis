@@ -1,6 +1,7 @@
 #ifndef __TestBeamAnalysis_EdmToNtupleNoMask_EdmToNtupleNoMask_h
 #define __TestBeamAnalysis_EdmToNtupleNoMask_EdmToNtupleNoMask_h
 
+
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 
@@ -30,7 +31,10 @@ class EdmToNtupleNoMask : public edm::EDAnalyzer
   virtual void endJob() ;
   static bool sortEvent( const tbeam::Event& a,  const tbeam::Event& b);
   const int verbosity_;
-  
+  int nCBC_;
+  int nStripsPerCBC_;
+  std::vector < std::pair <float, int> > clusterizer(std::vector <int> hits);
+  uint32_t stubSimulator(std::vector<std::pair <float, int> > hits0, std::vector<std::pair<float, int> > hits1, uint32_t windowSize_);
   TTree* tree_;
   std::vector<tbeam::Event> v_evtInfo_;
   tbeam::Event ev;
@@ -47,8 +51,10 @@ class EdmToNtupleNoMask : public edm::EDAnalyzer
   uint32_t windowAdd_;
   uint32_t stubLatencyAdd_;
   uint32_t triggerLatencyAdd_;
+  
 
   uint32_t stubWord_;
+  uint32_t stubWordReco_;
   int condData_;
   int cbc2Status_;
   unsigned int HVsettings_;

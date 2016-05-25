@@ -2,10 +2,12 @@
   <class name="tbeam::Event" ClassVersion="2">
   <!--  <version ClassVersion="1" checksum="3429877205" />-->
   <!-- <version ClassVersion="2" checksum="1722052690" />-->
-  <version ClassVersion="2" checksum="372243328" />
+  <version ClassVersion="2" checksum="1359161700" />
 </class>
+  <class name="std::pair<float , int >" persistent="true"/>
   <class name="std::vector<tbeam::Event>" persistent="true" />
   <class name="std::map<std::string, std::vector<int> >" persistent="true" /> 
+  <class name="std::map<std::string, std::vector<std::pair<float,int > > >" persistent="true" /> 
   <class name="std::map<std::string, std::vector<unsigned short> >" persistent="true" />
   <class name="std::vector<std::vector<Phase2TrackerCommissioningDigi> >" persistent="true" />
   <class name="edm::Wrapper<std::vector<std::vector<Phase2TrackerCommissioningDigi> > >" persistent="true" />

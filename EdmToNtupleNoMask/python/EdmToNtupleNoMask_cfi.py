@@ -14,6 +14,7 @@ treeMaker = cms.EDAnalyzer("EdmToNtupleNoMask",
    tiltAddress = cms.string("0x83000000"),
    vcthAddress = cms.string("0x010c0100"),
    stubLatencyAddress = cms.string("0x09000000"),
-   triggerLatencyAddress = cms.string("0x01010100")
+   triggerLatencyAddress = cms.string("0x01010100"),
+   numCBC = cms.untracked.int32(2)
 )
 

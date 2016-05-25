@@ -11,7 +11,7 @@ namespace tbeam {
   class Event :  public TObject {
    public:
     Event();
-    virtual ~Event() {}
+    virtual ~Event(){};
     unsigned int run;
     unsigned int lumiSection;
     unsigned int event;
@@ -24,6 +24,7 @@ namespace tbeam {
     unsigned int HVsettings;
     unsigned int DUTangle;
     uint32_t stubWord;
+    uint32_t stubWordReco;
     uint32_t window;
     uint32_t offset;
     uint32_t cwd;
@@ -33,12 +34,11 @@ namespace tbeam {
     uint32_t triggerLatency;
     int condData;
     int glibStatus;
-    int cbc1Status;
-    int cbc2Status;
-    
+
+    std::vector<int> cbcStatus;
     std::map< std::string,std::vector<int> > dut_channel;
     std::map< std::string,std::vector<int> > dut_row;
-     
+    std::map< std::string,std::vector <std::pair <float,int> > > clusters;
     ClassDef(Event,2)
   };
 }
