@@ -20,6 +20,16 @@
 #include "TTree.h"
 #include<stdint.h>
 
+class CbcConfig
+{
+   public:
+      CbcConfig(uint32_t cwdWord=0, uint32_t windowWord=0);
+      int window;
+      int offset1;
+      int offset2;
+      int CWD;
+};
+
 class EdmToNtupleNoMask : public edm::EDAnalyzer
 {
  public:
@@ -36,11 +46,11 @@ class EdmToNtupleNoMask : public edm::EDAnalyzer
   std::vector < tbeam::cluster > clusterizer(std::vector <int> hits);
 
   uint32_t stubWordGenerator(std::vector <tbeam::stub*> stubs);
-  std::vector <tbeam::stub*> stubSimulator(std::vector<tbeam::cluster > * cl0, std::vector< tbeam::cluster > *cl1, uint32_t windowSize_);
+  std::vector <tbeam::stub*> stubSimulator(std::vector<tbeam::cluster > * seeding, std::vector< tbeam::cluster > *matching);
   TTree* tree_;
   std::vector<tbeam::Event> v_evtInfo_;
   tbeam::Event ev;
-  
+  CbcConfig cbcConfiguration; 
   std::map<int,std::string> detIdNamemap_;
   uint32_t tdcAdd_;
   uint32_t hvAdd_;

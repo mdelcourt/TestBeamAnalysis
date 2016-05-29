@@ -40,8 +40,8 @@ tbeam::stub::stub():
    x(0),
    direction(0)
 {
-   cluster0=0;
-   cluster1=0;
+   seeding=0;
+   matched=0;
 }
 tbeam::dutEvent::dutEvent():
    stubWord(0),

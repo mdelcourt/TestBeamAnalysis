@@ -33,6 +33,17 @@
 
 using namespace Phase2Tracker;
 
+CbcConfig::CbcConfig(uint32_t cwdWord, uint32_t windowWord){
+   window = windowWord >>4;
+   offset1 = (cwdWord)%4;
+   if ((cwdWord>>2)%2) offset1 = -offset1;
+   offset2 = (cwdWord>>3)%4;
+   if ((cwdWord>>5)%2) offset2 = -offset2;
+   CWD = (cwdWord>>6)%4;
+}
+
+
+
 EdmToNtupleNoMask::EdmToNtupleNoMask(const edm::ParameterSet& iConfig) :
   verbosity_(iConfig.getUntrackedParameter<int>("verbosity", 0)),
   nCBC_(iConfig.getUntrackedParameter<int>("numCBC", 2)),
@@ -262,6 +273,9 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
          }
 	  }
      }
+   
+   
+   
    edm::Handle< edm::DetSetVector<Phase2TrackerDigi> > input;
    iEvent.getByLabel( "Phase2TrackerDigiProducer", "Unsparsified", input);
  
@@ -271,6 +285,8 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	exit(1);	
      }   
    
+   cbcConfiguration = CbcConfig(evtInfo.cwd,evtInfo.window);
+
    edm::DetSetVector<Phase2TrackerDigi>::const_iterator it;
    // loop over modules  
    std::vector < int >processedDetId;
@@ -292,7 +308,7 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	      }
          evtInfo.clusters[detIdNamemap_[detId]] = clusterizer(evtInfo.dut_channel[detIdNamemap_[detId]]);
          if (std::find(processedDetId.begin(), processedDetId.end(), detId-4) != processedDetId.end()){
-            evtInfo.stubs=stubSimulator(&evtInfo.clusters[detIdNamemap_[detId-4]],&evtInfo.clusters[detIdNamemap_[detId]],evtInfo.window>>4);
+            evtInfo.stubs=stubSimulator(&evtInfo.clusters[detIdNamemap_[detId-4]],&evtInfo.clusters[detIdNamemap_[detId]]);
             evtInfo.stubWordReco=stubWordGenerator(evtInfo.stubs);
          }
      }
@@ -371,7 +387,7 @@ std::vector < tbeam::cluster > EdmToNtupleNoMask::clusterizer ( std::vector <int
         }
         else{
             tbeam::cluster clust;
-            clust.x  = x0+(size-1)/2.;
+            clust.x  = x0+(size-1)/2.;//TODO change back to size -1
             clust.size = size;
             clust.stubs = std::vector <tbeam::stub *>();
             toReturn.push_back(clust);
@@ -380,29 +396,31 @@ std::vector < tbeam::cluster > EdmToNtupleNoMask::clusterizer ( std::vector <int
         }   
     }       
    tbeam::cluster clust;
-   clust.x  = x0+(size-1)/2.;
+   clust.x  = x0+(size-1)/2.;//TODO change back to size-1
    clust.size = size;
    clust.stubs = std::vector <tbeam::stub *>();
    toReturn.push_back(clust);
    return(toReturn);
 }
 
-std::vector<tbeam::stub*> EdmToNtupleNoMask::stubSimulator (std::vector < tbeam::cluster > * clust0, std::vector < tbeam::cluster > * clust1 , uint32_t windowSize_){
-    int CWD = 4;
-    int SSIZE = windowSize_;
+std::vector<tbeam::stub*> EdmToNtupleNoMask::stubSimulator (std::vector < tbeam::cluster > * seeding, std::vector < tbeam::cluster > * matching){
+    int CBCSIZE = 127;
     std::vector <tbeam::stub* > stubs;
-    for (unsigned int i=0; i<clust1->size(); i++){
-        if (clust1->at(i).size<(int)CWD){
-            for(unsigned int j=0; j<clust0->size(); j++){
-                if (clust0->at(j).size<(int)CWD && abs((int)clust1->at(i).x-(int)clust0->at(j).x)<=(int)SSIZE){
+    for (std::vector<tbeam::cluster>::iterator seed=seeding->begin(); seed!=seeding->end(); seed++){
+        if (seed->size<cbcConfiguration.CWD){
+           int offset;
+           if (seed->x < CBCSIZE/2)  offset  = cbcConfiguration.offset1;
+           else                              offset  = cbcConfiguration.offset2;
+            for(std::vector<tbeam::cluster>::iterator match = matching->begin(); match!=matching->end(); match++){
+                if (match->size<cbcConfiguration.CWD && abs((int)match->x-(int)seed->x+offset)<=cbcConfiguration.window){
                    tbeam::stub * s = new tbeam::stub;
-                   s->x     = (int)clust0->at(j).x;
-                   s->direction= (int)clust1->at(i).x-(int)clust0->at(j).x;
-                   s->cluster0 = &(clust0->at(j));
-                   s->cluster1 = &(clust1->at(i));
+                   s->x          = (int)seed->x;
+                   s->direction  = (int)match->x-(int)seed->x;
+                   s->seeding    = &(*seed);
+                   s->matched    = &(*match);
                    stubs.push_back(s); 
-                   clust0->at(j).stubs.push_back(s);
-                   clust1->at(i).stubs.push_back(s);
+                   seed->stubs.push_back(s);
+                   match->stubs.push_back(s);
                 }
             }
         }
@@ -413,9 +431,9 @@ std::vector<tbeam::stub*> EdmToNtupleNoMask::stubSimulator (std::vector < tbeam:
 uint32_t EdmToNtupleNoMask::stubWordGenerator(std::vector <tbeam::stub*> stubs){
    uint32_t stubWord=0;
     int CBCSIZE = 127;
-   for (unsigned int i=0; i<stubs.size(); i++){
+   for (std::vector<tbeam::stub*>::iterator stub=stubs.begin(); stub!=stubs.end(); stub++){
       for (int k=7; k>=0; k--){
-         if ((int)stubs.at(i)->cluster1->x >= k*CBCSIZE){
+         if ((int)(*stub)->seeding->x >= k*CBCSIZE){
             stubWord = stubWord | (int)1<<k;
             break;
          }

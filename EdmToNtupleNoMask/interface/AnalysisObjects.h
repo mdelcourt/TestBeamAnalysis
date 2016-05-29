@@ -14,8 +14,8 @@ namespace tbeam {
   class stub{
    public:
      stub();
-     tbeam::cluster * cluster0;  // Bottom sensor cluster
-     tbeam::cluster * cluster1;  // Top sensor cluster
+     tbeam::cluster * seeding;  // Bottom sensor cluster
+     tbeam::cluster * matched;  // Top sensor cluster
      uint16_t x;        // Position of the stub (bottom sensor)
      int16_t direction; // Direction of the stub (cl0-cl1)
 
