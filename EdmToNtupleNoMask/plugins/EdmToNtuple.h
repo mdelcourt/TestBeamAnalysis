@@ -43,10 +43,10 @@ class EdmToNtupleNoMask : public edm::EDAnalyzer
   const int verbosity_;
   int nCBC_;
   int nStripsPerCBC_;
-  std::vector < tbeam::cluster > clusterizer(std::vector <int> hits);
+  std::vector < tbeam::cluster *> clusterizer(std::vector <int> hits);
 
   uint32_t stubWordGenerator(std::vector <tbeam::stub*> stubs);
-  std::vector <tbeam::stub*> stubSimulator(std::vector<tbeam::cluster > * seeding, std::vector< tbeam::cluster > *matching);
+  std::vector <tbeam::stub*> stubSimulator(std::vector<tbeam::cluster *> * seeding, std::vector< tbeam::cluster *> *matching);
   TTree* tree_;
   std::vector<tbeam::Event> v_evtInfo_;
   tbeam::Event ev;

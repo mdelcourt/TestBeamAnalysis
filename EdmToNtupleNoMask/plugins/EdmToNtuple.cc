@@ -371,9 +371,9 @@ bool EdmToNtupleNoMask::sortEvent( const tbeam::Event& a,  const tbeam::Event& b
   return a.time < b.time;
 }
 
-std::vector < tbeam::cluster > EdmToNtupleNoMask::clusterizer ( std::vector <int> hits){
+std::vector < tbeam::cluster *> EdmToNtupleNoMask::clusterizer ( std::vector <int> hits){
    sort(hits.begin(),hits.end());
-   std::vector < tbeam::cluster > toReturn;
+   std::vector < tbeam::cluster * > toReturn;
     if (hits.size()<1){
         return(toReturn);
     }
@@ -386,41 +386,41 @@ std::vector < tbeam::cluster > EdmToNtupleNoMask::clusterizer ( std::vector <int
             size++;
         }
         else{
-            tbeam::cluster clust;
-            clust.x  = x0+(size-1)/2.;//TODO change back to size -1
-            clust.size = size;
-            clust.stubs = std::vector <tbeam::stub *>();
+            tbeam::cluster * clust = new tbeam::cluster();
+            clust->x  = x0+(size-1)/2.;
+            clust->size = size;
+            clust->stubs = std::vector <tbeam::stub *>();
             toReturn.push_back(clust);
             x0=hits.at(i);
             size=1;
         }   
     }       
-   tbeam::cluster clust;
-   clust.x  = x0+(size-1)/2.;//TODO change back to size-1
-   clust.size = size;
-   clust.stubs = std::vector <tbeam::stub *>();
+   tbeam::cluster * clust = new tbeam::cluster();
+   clust->x       = x0+(size-1)/2.;
+   clust->size    = size;
+   clust->stubs   = std::vector <tbeam::stub *>();
    toReturn.push_back(clust);
    return(toReturn);
 }
 
-std::vector<tbeam::stub*> EdmToNtupleNoMask::stubSimulator (std::vector < tbeam::cluster > * seeding, std::vector < tbeam::cluster > * matching){
+std::vector<tbeam::stub*> EdmToNtupleNoMask::stubSimulator (std::vector < tbeam::cluster *> * seeding, std::vector < tbeam::cluster *> * matching){
     int CBCSIZE = 127;
     std::vector <tbeam::stub* > stubs;
-    for (std::vector<tbeam::cluster>::iterator seed=seeding->begin(); seed!=seeding->end(); seed++){
-        if (seed->size<cbcConfiguration.CWD){
+    for (std::vector<tbeam::cluster*>::iterator seed=seeding->begin(); seed!=seeding->end(); seed++){
+        if ((*seed)->size<cbcConfiguration.CWD){
            int offset;
-           if (seed->x < CBCSIZE/2)  offset  = cbcConfiguration.offset1;
-           else                              offset  = cbcConfiguration.offset2;
-            for(std::vector<tbeam::cluster>::iterator match = matching->begin(); match!=matching->end(); match++){
-                if (match->size<cbcConfiguration.CWD && abs((int)match->x-(int)seed->x+offset)<=cbcConfiguration.window){
+           if ((*seed)->x < CBCSIZE/2)  offset  = cbcConfiguration.offset1;
+           else                       offset  = cbcConfiguration.offset2;
+            for(std::vector<tbeam::cluster*>::iterator match = matching->begin(); match!=matching->end(); match++){
+                if ((*match)->size<cbcConfiguration.CWD && abs((int)(*match)->x-(int)(*seed)->x+offset)<=cbcConfiguration.window){
                    tbeam::stub * s = new tbeam::stub;
-                   s->x          = (int)seed->x;
-                   s->direction  = (int)match->x-(int)seed->x;
-                   s->seeding    = &(*seed);
-                   s->matched    = &(*match);
+                   s->x          = (int)(*seed)->x;
+                   s->direction  = (int)(*match)->x-(int)(*seed)->x;
+                   s->seeding    = *seed;
+                   s->matched    = *match;
                    stubs.push_back(s); 
-                   seed->stubs.push_back(s);
-                   match->stubs.push_back(s);
+                   (*seed)->stubs.push_back(s);
+                   (*match)->stubs.push_back(s);
                 }
             }
         }
