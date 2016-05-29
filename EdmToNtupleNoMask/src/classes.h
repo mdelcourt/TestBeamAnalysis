@@ -9,9 +9,18 @@ struct dictionary {
 
  tbeam::Event rv1;
  std::vector<tbeam::Event> vrv1;
- std::pair < float, int > pfi;
- std::map<std::string, std::vector<std::pair<float,int > > > msvpfi;
+ std::map<std::string, std::vector< tbeam::cluster > > msvpfi;
+ tbeam::cluster  cp;
+ tbeam::cluster *cpp;
+ tbeam::stub s;
+ tbeam::cbc c;
+ tbeam::dutEvent  dE;
+ tbeam::condEvent cE;
+ std::vector< tbeam::stub > vs;
+ std::vector< tbeam::cbc > vc;
+ std::vector< tbeam::cluster> vcl;
  std::vector<int> vrvi;
+ std::vector<tbeam::stub *> vps;
  std::vector<unsigned short> vrvs;
  std::map< std::string,std::vector<int> >  msvi;
  std::map< std::string,std::vector<unsigned short> > msvs;

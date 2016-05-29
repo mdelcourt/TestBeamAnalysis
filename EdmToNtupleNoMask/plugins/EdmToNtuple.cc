@@ -93,7 +93,9 @@ void EdmToNtupleNoMask::beginJob()
   fs->file().cd("/");
   tree_ = fs->make<TTree>("tbeamTree", "AnalysisTree no mask");
   //ev is a dummy variable of type tbeam::Event
-  tree_->Branch("run", &ev.run);
+  tree_->Branch("DUT",&ev.DUT);
+  tree_->Branch("Condition",&ev.Condition);
+  /*tree_->Branch("run", &ev.run);
   tree_->Branch("lumiSection" , &ev.lumiSection );
   tree_->Branch("event" , &ev.event );
   tree_->Branch("time" , &ev.time, "time/L" );
@@ -113,10 +115,11 @@ void EdmToNtupleNoMask::beginJob()
   tree_->Branch("tilt", &ev.tilt);
   tree_->Branch("condData", &ev.condData);
   tree_->Branch("glibStatus", &ev.glibStatus);
-  tree_->Branch("cbcStatus", "std::vector<int>",&ev.cbcStatus);
+  tree_->Branch("stubs", "std::vector<tbeam::stub>",&ev.stubs);
+  tree_->Branch("cbcs", "std::vector<tbeam::cbc>",&ev.cbcs);
   tree_->Branch("dut_channel", "std::map< std::string,std::vector<int> >", &ev.dut_channel);
   tree_->Branch("dut_row", "std::map< std::string,std::vector<int> >", &ev.dut_row);
-  tree_->Branch("clusters", "std::map< std::string,std::vector <std::pair <float, int >  >", &ev.clusters);
+  tree_->Branch("clusters", "std::map< std::string,std::vector <tbeam::cluster> >", &ev.clusters);*/
 }
 
 void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
@@ -170,7 +173,11 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 		    }	     
 	   }	     
         for( int i=0;i<tr_header.getNumberOfCBC();i++ ){
-           evtInfo.cbcStatus.push_back(tr_header.CBCStatus()[i]);
+           tbeam::cbc c;
+           c.pipelineAdd =  0;
+           c.status      =  tr_header.CBCStatus()[i];
+           c.error       =  0;
+           evtInfo.cbcs.push_back(c);
         }
 	     
 	     delete buffer;
@@ -284,8 +291,9 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	         evtInfo.dut_row[detIdNamemap_[detId]].push_back(hit->row());
 	      }
          evtInfo.clusters[detIdNamemap_[detId]] = clusterizer(evtInfo.dut_channel[detIdNamemap_[detId]]);
-         if (std::find(processedDetId.begin(), processedDetId.end(), detId-1) != processedDetId.end()){
-            evtInfo.stubWordReco=stubSimulator(evtInfo.clusters[detIdNamemap_[detId-1]],evtInfo.clusters[detIdNamemap_[detId]],evtInfo.window>>4);
+         if (std::find(processedDetId.begin(), processedDetId.end(), detId-4) != processedDetId.end()){
+            evtInfo.stubs=stubSimulator(&evtInfo.clusters[detIdNamemap_[detId-4]],&evtInfo.clusters[detIdNamemap_[detId]],evtInfo.window>>4);
+            evtInfo.stubWordReco=stubWordGenerator(evtInfo.stubs);
          }
      }
    
@@ -304,9 +312,38 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
    for( itc=inputCluster->begin();itc!=inputCluster->end();itc++ )
      {
 //	uint32_t detid = itc->id();
-     }   
-   
+     }
+//   if (evtInfo.stubs.size()>0) std::cout<<evtInfo.stubs.at(0)->cluster0->x<<std::endl;
+   /*if (evtInfo.stubWord!=evtInfo.stubWordReco){
+      std::cout<<"S : "<<evtInfo.stubWord<<"- Reco : "<<evtInfo.stubWordReco<<std::endl;
+      for (unsigned int i=0; i<evtInfo.dut_channel["det0"].size(); i++){std::cout<<evtInfo.dut_channel["det0"].at(i)<<"-";}
+      std::cout<<std::endl;
+      for (unsigned int i=0; i<evtInfo.dut_channel["det1"].size(); i++){std::cout<<evtInfo.dut_channel["det1"].at(i)<<"-";}
+      std::cout<<std::endl;
+   }*/
    ev = evtInfo;
+   ev.DUT.clusters      = ev.clusters;
+   ev.DUT.hits          = ev.dut_channel;
+   ev.DUT.stubs         = ev.stubs;
+   ev.DUT.stubWord      = ev.stubWord;
+   ev.DUT.stubWordReco  = ev.stubWordReco;
+   ev.Condition.run             =   ev.run;              
+   ev.Condition.lumiSection     =   ev.lumiSection;      
+   ev.Condition.event           =   ev.event;            
+   ev.Condition.time            =   ev.time;             
+   ev.Condition.unixtime        =   ev.unixtime;         
+   ev.Condition.tdcPhase        =   ev.tdcPhase;         
+   ev.Condition.HVsettings      =   ev.HVsettings;       
+   ev.Condition.DUTangle        =   ev.DUTangle;         
+   ev.Condition.window          =   ev.window;           
+   ev.Condition.offset          =   ev.offset;           
+   ev.Condition.cwd             =   ev.cwd;              
+   ev.Condition.tilt            =   ev.tilt;             
+   ev.Condition.vcth            =   ev.vcth;             
+   ev.Condition.stubLatency     =   ev.stubLatency;      
+   ev.Condition.triggerLatency  =   ev.triggerLatency;   
+   ev.Condition.glibStatus      =   ev.glibStatus;       
+   ev.Condition.cbcs            =   ev.cbcs;             
    tree_->Fill();
 }
 
@@ -318,9 +355,9 @@ bool EdmToNtupleNoMask::sortEvent( const tbeam::Event& a,  const tbeam::Event& b
   return a.time < b.time;
 }
 
-std::vector < std::pair <float , int > > EdmToNtupleNoMask::clusterizer ( std::vector <int> hits){
+std::vector < tbeam::cluster > EdmToNtupleNoMask::clusterizer ( std::vector <int> hits){
    sort(hits.begin(),hits.end());
-   std::vector < std::pair < float , int > > toReturn;
+   std::vector < tbeam::cluster > toReturn;
     if (hits.size()<1){
         return(toReturn);
     }
@@ -333,44 +370,59 @@ std::vector < std::pair <float , int > > EdmToNtupleNoMask::clusterizer ( std::v
             size++;
         }
         else{
-            std::pair < float , int > clust;
-            clust.first  = x0+(size-1)/2.;
-            clust.second = size;
+            tbeam::cluster clust;
+            clust.x  = x0+(size-1)/2.;
+            clust.size = size;
+            clust.stubs = std::vector <tbeam::stub *>();
             toReturn.push_back(clust);
             x0=hits.at(i);
             size=1;
         }   
     }       
-   std::pair < float , int > clust;
-   clust.first  = x0+(size-1)/2.;
-   clust.second = size;
+   tbeam::cluster clust;
+   clust.x  = x0+(size-1)/2.;
+   clust.size = size;
+   clust.stubs = std::vector <tbeam::stub *>();
    toReturn.push_back(clust);
    return(toReturn);
 }
 
-uint32_t EdmToNtupleNoMask::stubSimulator (std::vector < std::pair <float , int> > clust0, std::vector < std::pair <float ,int > > clust1 , uint32_t windowSize_){
-    int CWD = 256;
+std::vector<tbeam::stub*> EdmToNtupleNoMask::stubSimulator (std::vector < tbeam::cluster > * clust0, std::vector < tbeam::cluster > * clust1 , uint32_t windowSize_){
+    int CWD = 4;
     int SSIZE = windowSize_;
-    int CBCSIZE = 127;
-    uint32_t stubWord=0;
-    for (unsigned int i=0; i<clust1.size(); i++){
-        if (clust1.at(i).second<(int)CWD){
-            for(unsigned int j=0; j<clust0.size(); j++){
-                if (clust0.at(j).second<(int)CWD && abs((int)clust1.at(i).first-(int)clust1.at(j).first)<(int)SSIZE){
-                    for (int k=7; k>=0; k--){
-                        if ((int)clust0.at(j).first>=k*CBCSIZE){
-                            //Set kth byte to 1
-                            stubWord= stubWord | (int)1<<k;
-                            break;
-                        }
-                    }
+    std::vector <tbeam::stub* > stubs;
+    for (unsigned int i=0; i<clust1->size(); i++){
+        if (clust1->at(i).size<(int)CWD){
+            for(unsigned int j=0; j<clust0->size(); j++){
+                if (clust0->at(j).size<(int)CWD && abs((int)clust1->at(i).x-(int)clust0->at(j).x)<=(int)SSIZE){
+                   tbeam::stub * s = new tbeam::stub;
+                   s->x     = (int)clust0->at(j).x;
+                   s->direction= (int)clust1->at(i).x-(int)clust0->at(j).x;
+                   s->cluster0 = &(clust0->at(j));
+                   s->cluster1 = &(clust1->at(i));
+                   stubs.push_back(s); 
+                   clust0->at(j).stubs.push_back(s);
+                   clust1->at(i).stubs.push_back(s);
                 }
             }
         }
     }
-   return(stubWord);
+    return(stubs);
 }
 
+uint32_t EdmToNtupleNoMask::stubWordGenerator(std::vector <tbeam::stub*> stubs){
+   uint32_t stubWord=0;
+    int CBCSIZE = 127;
+   for (unsigned int i=0; i<stubs.size(); i++){
+      for (int k=7; k>=0; k--){
+         if ((int)stubs.at(i)->cluster1->x >= k*CBCSIZE){
+            stubWord = stubWord | (int)1<<k;
+            break;
+         }
+      }
+   }
+   return (stubWord);
+}
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(EdmToNtupleNoMask);
