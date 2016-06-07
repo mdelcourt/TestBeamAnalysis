@@ -106,10 +106,10 @@ void EdmToNtupleNoMask::beginJob()
   fs->file().cd("/");
   tree_ = fs->make<TTree>("tbeamTree", "AnalysisTree no mask");
   //ev is a dummy variable of type tbeam::Event
-  tree_->Branch("DUT",&dEvent_);
-  tree_->Branch("Condition",&cEvent_);
-  //tree_->Branch("cdata",&cEvent_);
-  //tree_->Branch("ddata",&dEvent_);
+  tree_->Branch("DUT",&ev.DUT);
+  tree_->Branch("Condition",&ev.Condition);
+  tree_->Branch("cdata",&cEvent_);
+  tree_->Branch("ddata",&dEvent_);
   /*tree_->Branch("run", &ev.run);
   tree_->Branch("lumiSection" , &ev.lumiSection );
   tree_->Branch("event" , &ev.event );
