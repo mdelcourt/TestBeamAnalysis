@@ -9,7 +9,7 @@
      [Notes on implementation]
 */
 //
-// Author:  Ali Harb, Suvankar Roy Chowdhury, Nicolas Chanon, Kirill Skovpen
+// Author:  Ali Harb, Suvankar Roy Chowdhury, Martin Delcourt, Nicolas Chanon, Kirill Skovpen
 // 
 //
 
@@ -108,33 +108,6 @@ void EdmToNtupleNoMask::beginJob()
   //ev is a dummy variable of type tbeam::Event
   tree_->Branch("DUT",&dEvent_);
   tree_->Branch("Condition",&cEvent_);
-  //tree_->Branch("cdata",&cEvent_);
-  //tree_->Branch("ddata",&dEvent_);
-  /*tree_->Branch("run", &ev.run);
-  tree_->Branch("lumiSection" , &ev.lumiSection );
-  tree_->Branch("event" , &ev.event );
-  tree_->Branch("time" , &ev.time, "time/L" );
-  tree_->Branch("unixtime" , &ev.unixtime, "unixtime/L" );
-  tree_->Branch("tdcPhase", &ev.tdcPhase);
-  tree_->Branch("hvSettings", &ev.HVsettings);
-  tree_->Branch("dutAngle", &ev.DUTangle);
-  tree_->Branch("stubWord", &ev.stubWord);
-  tree_->Branch("stubWordReco", &ev.stubWord);
-  tree_->Branch("stubWordReco", &ev.stubWordReco);
-  tree_->Branch("vcth", &ev.vcth);
-  tree_->Branch("offset", &ev.offset);
-  tree_->Branch("window", &ev.window);
-  tree_->Branch("cwd", &ev.cwd);
-  tree_->Branch("stubLatency", &ev.stubLatency);
-  tree_->Branch("triggerLatency", &ev.triggerLatency);
-  tree_->Branch("tilt", &ev.tilt);
-  tree_->Branch("condData", &ev.condData);
-  tree_->Branch("glibStatus", &ev.glibStatus);
-  tree_->Branch("stubs", "std::vector<tbeam::stub>",&ev.stubs);
-  tree_->Branch("cbcs", "std::vector<tbeam::cbc>",&ev.cbcs);
-  tree_->Branch("dut_channel", "std::map< std::string,std::vector<int> >", &ev.dut_channel);
-  tree_->Branch("dut_row", "std::map< std::string,std::vector<int> >", &ev.dut_row);
-  tree_->Branch("clusters", "std::map< std::string,std::vector <tbeam::cluster> >", &ev.clusters);*/
 }
 
 void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
@@ -314,7 +287,9 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	      }
          dev.clusters[detIdNamemap_[detId]] = clusterizer(dev.dut_channel[detIdNamemap_[detId]]);
          if (std::find(processedDetId.begin(), processedDetId.end(), detId-4) != processedDetId.end()){
-            dev.stubs=stubSimulator(&dev.clusters[detIdNamemap_[detId-4]],&dev.clusters[detIdNamemap_[detId]]);
+            if(verbosity_) std::cout << "Event=" << cev.event << " Stub Production with seeding detId=" << detId-4 << " && matching detId=" << detId << std::endl;
+            //dev.stubs=stubSimulator(&dev.clusters[detIdNamemap_[detId-4]],&dev.clusters[detIdNamemap_[detId]]);
+            dev.stubs=stubSimulator(&dev.clusters[detIdNamemap_[detId]],&dev.clusters[detIdNamemap_[detId-4]]);
             dev.stubWordReco=stubWordGenerator(dev.stubs);
          }
      }
@@ -345,34 +320,8 @@ void EdmToNtupleNoMask::analyze(const edm::Event& iEvent, const edm::EventSetup&
    }*/
    ev = evtInfo;
    ev.DUT = dev;
-   /*
-   ev.DUT.clusters      = ev.clusters;
-   ev.DUT.dut_channel   = ev.dut_channel;
-   ev.DUT.dut_row       = ev.dut_row;
-   ev.DUT.stubs         = ev.stubs;
-   ev.DUT.stubWord      = ev.stubWord;
-   ev.DUT.stubWordReco  = ev.stubWordReco;*/
-   ev.Condition = cev;
    cEvent_ = &cev;
    dEvent_ = &dev;  
-   /*
-   ev.Condition.run             =   ev.run;              
-   ev.Condition.lumiSection     =   ev.lumiSection;      
-   ev.Condition.event           =   ev.event;            
-   ev.Condition.time            =   ev.time;             
-   ev.Condition.unixtime        =   ev.unixtime;         
-   ev.Condition.tdcPhase        =   ev.tdcPhase;         
-   ev.Condition.HVsettings      =   ev.HVsettings;       
-   ev.Condition.DUTangle        =   ev.DUTangle;         
-   ev.Condition.window          =   ev.window;           
-   ev.Condition.offset          =   ev.offset;           
-   ev.Condition.cwd             =   ev.cwd;              
-   ev.Condition.tilt            =   ev.tilt;             
-   ev.Condition.vcth            =   ev.vcth;             
-   ev.Condition.stubLatency     =   ev.stubLatency;      
-   ev.Condition.triggerLatency  =   ev.triggerLatency;   
-   ev.Condition.glibStatus      =   ev.glibStatus;       
-   ev.Condition.cbcs            =   ev.cbcs;    */         
    tree_->Fill();
 }
 
@@ -420,10 +369,10 @@ std::vector<tbeam::stub*> EdmToNtupleNoMask::stubSimulator (std::vector < tbeam:
     int CBCSIZE = 127;
     std::vector <tbeam::stub* > stubs;
     for (std::vector<tbeam::cluster*>::iterator seed=seeding->begin(); seed!=seeding->end(); seed++){
-        if ((*seed)->size<cbcConfiguration.CWD){
+        if ((*seed)->size<=cbcConfiguration.CWD){
            int offset;
            if ((*seed)->x < CBCSIZE/2)  offset  = cbcConfiguration.offset1;
-           else                       offset  = cbcConfiguration.offset2;
+           else                         offset  = cbcConfiguration.offset2;
             for(std::vector<tbeam::cluster*>::iterator match = matching->begin(); match!=matching->end(); match++){
                 if ((*match)->size<cbcConfiguration.CWD && abs((int)(*match)->x-(int)(*seed)->x+offset)<=cbcConfiguration.window){
                    tbeam::stub * s = new tbeam::stub;

@@ -23,4 +23,5 @@ process.TFileService = cms.Service("TFileService",
 )
 
 #process.treeMaker.detIdVec = cms.vint32( 51001,51002,51011,51012, 51013 )                            
+#process.treeMaker.verbosity = cms.untracked.int32(1)
 process.p = cms.Path(process.treeMaker)
